@@ -1,0 +1,46 @@
+﻿@page "/teacherCard"
+@using BlazorPractClient.DataAccess
+@using BlazorPractClient.DataAccess.Model
+
+
+<h3>TeacherCard</h3>
+
+@if (_allTeacher.Count == 0)
+{
+    <p>
+        <em>Loading ...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var post in _allTeacher)
+            {
+                <tr>
+                    <td>@post.TeacherId</td>
+                    <td>@post.TeacherName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Teacher> _allTeacher = new List<Teacher>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "query{comments{teacherId, teacherName}}";
+        string queryType = "comments";
+        var teacher = await Query.ExecuteQueryReturnListAsync<Teacher>(queryType, query);
+        _allTeacher = teacher;
+    }
+}

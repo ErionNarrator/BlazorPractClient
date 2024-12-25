@@ -1,0 +1,61 @@
+﻿@page "/serviceCard"
+@using BlazorPractClient.DataAccess
+@using BlazorPractClient.DataAccess.Model
+<h3>ServiceCard</h3>
+
+@if (_allService.Count == 0)
+{
+    <p>
+        <em>Loading ...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>GroupId</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var post in _allService)
+            {
+                <tr>
+                    <td>@post.ServiceId</td>
+                    <td>@post.ServiceName</td>
+                    <td>@post.Description</td>
+                    <td>@post.GroupId</td>
+
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Service> _allService = new List<Service>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "query{services{serviceId, serviceName, description,groupId }}";
+        string queryType = "services";
+        var result = await Query.ExecuteQueryReturnListAsync<Service>(queryType, query);
+        _allService = result;
+    }
+    // Модели данных для запчастей
+    // public class RepairData
+    // {
+    //     public List<Service> UsedParts { get; set; } = new List<Service>();
+    // }
+
+    // public class UsedPartData
+    // {
+    //     public Part Part { get; set; }
+    //     public int Quantity { get; set; }
+    // }
+}

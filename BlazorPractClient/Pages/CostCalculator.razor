@@ -1,0 +1,89 @@
+﻿@page "/costCalculator"
+@using BlazorPractClient.DataAccess
+@using BlazorPractClient.DataAccess.Model
+
+<h3>CostCalculator</h3>
+
+@if (Groups == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (Groups.Any())
+{
+    <p><em>Нет данных о ремонтах</em></p>
+}
+else
+{
+    <div class="mb-3">
+        <label>Дата начала:</label>
+        <input type="date" class="form-control" @bind="startDate" />
+
+        <label class="mt-2">Дата окончания:</label>
+        <input type="date" class="form-control" @bind="endDate" />
+
+        <button class="btn btn-primary mt-3" @onclick="CalculateTotalCost">
+            Рассчитать
+        </button>
+    </div>
+
+    @if (_totalCost > 0)
+    {
+        <p class="alert alert-success">Общая стоимость услуг: @_totalCost:₽</p>
+    }
+    else if (calculationPerformed)
+    {
+        <p class="alert alert-info">Нет завершённых групп.</p>
+    }
+}
+
+@code {
+    private List<Group>? Groups;
+    private DateTime startDate = DateTime.Now.AddMonths(-1);
+    private DateTime endDate = DateTime.Now;
+    private decimal _totalCost;
+    private bool calculationPerformed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            string query = @"
+            query {
+                groups {
+                    groupId
+                    name
+                    startDate
+                    endDate
+                    totalCost
+                }
+            }";
+
+            Groups = await Query.ExecuteQueryReturnListAsync<Group>("repair", query);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error fetching repairs: {ex.Message}");
+            Groups = new List<Group>();
+        }
+    }
+
+    private void CalculateTotalCost()
+    {
+        calculationPerformed = true;
+
+        if (Groups == null || !Groups.Any())
+        {
+            _totalCost = 0;
+            return;
+        }
+
+
+        var filteredRepairs = Groups.Where(repair =>
+            repair.EndDate.HasValue &&
+            repair.EndDate.Value.Date >= startDate.Date &&
+            repair.EndDate.Value.Date <= endDate.Date);
+
+
+        _totalCost = filteredRepairs.Sum(repair => repair.TotalCost);
+    }
+}

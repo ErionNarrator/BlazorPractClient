@@ -1,0 +1,56 @@
+﻿@page "/kidCard"
+@using BlazorPractClient.DataAccess
+@using BlazorPractClient.DataAccess.Model
+
+
+<h3>KidCard</h3>
+
+@if (_allKid.Count == 0)
+{
+    <p>
+        <em>Loading ...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Money</th>
+                <th>Name</th>
+                <th>Group</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var post in _allKid)
+               
+            {
+                <tr>
+                    <td>@post.KidId</td>
+                    <td>@post.KidMoney: ₽ </td>
+                    <td>@post.KidName</td>
+                    <td> @post.Group.Name </td>
+
+
+
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Kid> _allKid = new List<Kid>();
+    private List<Group> _allGroup = new List<Group>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "query{kids{kidId, kidName, kidMoney, group{name}}}";
+        string queryType = "kids";
+        var result = await Query.ExecuteQueryReturnListAsync<Kid>(queryType, query);
+        _allKid = result;
+    }
+
+}
